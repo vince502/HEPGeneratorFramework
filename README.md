@@ -1,6 +1,6 @@
 # HEP Event Generation with Pythia8 + EvtGen + Angantyr
 
-[![Docker Build](https://github.com/YOUR_USERNAME/hep-generation/actions/workflows/docker-build.yml/badge.svg)](https://github.com/YOUR_USERNAME/hep-generation/actions/workflows/docker-build.yml)
+[![Docker Build](https://github.com/vince502/hep-generation/actions/workflows/docker-build.yml/badge.svg)](https://github.com/vince502/hep-generation/actions/workflows/docker-build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A containerized Monte Carlo event generation framework for Heavy Ion and Heavy Flavor physics studies. Features:
@@ -25,7 +25,7 @@ docker pull ghcr.io/vince502/hep-generation:latest
 
 ### Build Locally
 ```bash
-git clone https://github.com/YOUR_USERNAME/hep-generation.git
+git clone https://github.com/vince502/hep-generation.git
 cd hep-generation
 
 # Build for current platform
