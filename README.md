@@ -17,10 +17,10 @@ A containerized Monte Carlo event generation framework for Heavy Ion and Heavy F
 ### Pull Pre-built Image
 ```bash
 # For Linux x86_64
-docker pull ghcr.io/YOUR_USERNAME/hep-generation:latest
+docker pull ghcr.io/vince502/hep-generation:latest
 
 # For Mac M1/M2/M3
-docker pull ghcr.io/YOUR_USERNAME/hep-generation:latest
+docker pull ghcr.io/vince502/hep-generation:latest
 ```
 
 ### Build Locally
