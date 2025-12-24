@@ -1,0 +1,19 @@
+# =============================================================================
+# BpKJpsi.dec
+# -----------------------------------------------------------------------------
+# EvtGen decay file for B+ -> K+ J/psi (J/psi -> mu+ mu-)
+# Forces 100% signal efficiency for generated B+ mesons.
+# =============================================================================
+
+# Override B+ and B- decays
+Decay B+
+  1.0   J/psi  K+    SVS;
+Enddecay
+CDecay B-
+
+# Override J/psi decay
+Decay J/psi
+  1.0   mu+  mu-    VLL;
+Enddecay
+
+End

@@ -1,0 +1,17 @@
+# Decay file for D0 Flow and Spin Alignment Studies
+# -----------------------------------------------
+
+# Define D*+ -> D0 pi+ (Vector to Scalar Scalar)
+# This model naturally handles polarization if the parent is polarized.
+Decay D*+
+  1.0  D0  pi+         VSS;
+Enddecay
+CDecay D*-
+
+# Define D0 -> K- pi+ (Scalar to Scalar Scalar)
+Decay D0
+  1.0  K-  pi+         PHSP;
+Enddecay
+CDecay anti-D0
+
+End

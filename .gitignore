@@ -1,0 +1,30 @@
+# Build artifacts
+build/
+*.o
+*.a
+
+# Generated data
+*.hepmc3
+*.txt
+!requirements.txt
+
+# Output files
+output/
+results*/
+*.png
+
+# Docker artifacts
+*.tar.gz
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
