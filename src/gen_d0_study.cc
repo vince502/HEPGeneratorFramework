@@ -62,6 +62,33 @@ int main(int argc, char *argv[]) {
   pythia.readString("HardQCD:hardbbbar = on");
   pythia.readString("PhaseSpace:pTHatMin = 3.0");
 
+  // =========================================================================
+  // TUNE SELECTION - CMS CP5 (recommended for LHC spectra)
+  // =========================================================================
+  // PDF: NNPDF3.1 NNLO
+  pythia.readString("PDF:pSet = LHAPDF6:NNPDF31_nnlo_as_0118");
+
+  // CP5 MPI parameters
+  pythia.readString("MultipartonInteractions:pT0Ref = 1.41");
+  pythia.readString("MultipartonInteractions:ecmPow = 0.03344");
+  pythia.readString("MultipartonInteractions:coreFraction = 0.758");
+  pythia.readString("MultipartonInteractions:coreRadius = 0.63");
+
+  // CP5 Color Reconnection
+  pythia.readString("ColourReconnection:reconnect = on");
+  pythia.readString("ColourReconnection:range = 5.176");
+
+  // CP5 ISR/FSR settings
+  pythia.readString("SpaceShower:alphaSorder = 2");
+  pythia.readString("SpaceShower:alphaSvalue = 0.118");
+  pythia.readString("SpaceShower:pT0Ref = 1.56");
+  pythia.readString("SpaceShower:ecmPow = 0.033");
+  pythia.readString("TimeShower:alphaSorder = 2");
+  pythia.readString("TimeShower:alphaSvalue = 0.118");
+
+  // CP5 Beam Remnant settings
+  pythia.readString("BeamRemnants:primordialKThard = 1.88");
+
   // Reduce output verbosity
   pythia.readString("Next:numberShowInfo = 0");
   pythia.readString("Next:numberShowProcess = 0");
@@ -77,7 +104,7 @@ int main(int argc, char *argv[]) {
   // EvtGen Setup
   std::string evtGenDec = "/opt/hep/share/EvtGen/DECAY.DEC";
   std::string evtGenPdt = "/opt/hep/share/EvtGen/evt.pdl";
-  std::string userDec = "../decays/D0SpinAlignment.dec";
+  std::string userDec = "/work/run/D0SpinAlignment.dec";
   EvtExternalGenList genList;
   auto evtgen =
       std::make_shared<EvtGenDecays>(&pythia, evtGenDec, evtGenPdt, &genList,
@@ -132,10 +159,8 @@ int main(int argc, char *argv[]) {
       double rapidity = pStar.rap();
 
       // === v2 Flow Analysis ===
-      // D* azimuthal angle relative to event plane
       double phi_Dstar = std::atan2(pStar.py(), pStar.px());
       double deltaPhi = phi_Dstar - psi_RP;
-      // Normalize to [-π/2, π/2] for v2 symmetry
       while (deltaPhi > M_PI / 2)
         deltaPhi -= M_PI;
       while (deltaPhi < -M_PI / 2)
@@ -143,7 +168,6 @@ int main(int argc, char *argv[]) {
       double cos2DeltaPhi = std::cos(2.0 * (phi_Dstar - psi_RP));
 
       // === Spin Alignment Analysis ===
-      // Boost to D* rest frame
       Vec4 pD0_rf = boostToRest(pD0, pStar);
       Vec4 n_rf = boostToRest(nLab, pStar);
 
@@ -156,10 +180,7 @@ int main(int argc, char *argv[]) {
                           (pD0Mag * nMag);
         bool nonPrompt = isNonPrompt(i, pythia.event);
 
-        // Output: type pt rapidity cosTheta cos2DeltaPhi
-        // type: 0=prompt, 1=non-prompt
-        // cosTheta: for spin alignment (ρ00)
-        // cos2DeltaPhi: for v2 = <cos(2ΔΦ)>
+        // Output: type pT rapidity cosTheta cos2DeltaPhi
         fout << (nonPrompt ? 1 : 0) << " " << pt << " " << rapidity << " "
              << cosTheta << " " << cos2DeltaPhi << "\n";
 

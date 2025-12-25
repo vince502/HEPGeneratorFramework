@@ -38,7 +38,7 @@ pythia.readString("ColourReconnection:range = 5.176");
 pythia.readString("SpaceShower:alphaSorder = 2");
 pythia.readString("SpaceShower:alphaSvalue = 0.118");
 pythia.readString("SpaceShower:pT0Ref = 1.56");
-pythia.readString("SpaceShower:ecmPow = -0.033");
+pythia.readString("SpaceShower:ecmPow = 0.033");
 pythia.readString("TimeShower:alphaSorder = 2");
 pythia.readString("TimeShower:alphaSvalue = 0.118");
 
@@ -172,7 +172,7 @@ pythia.readString("PartonLevel:FSR = on");   // Final state radiation
 pythia.readString("SpaceShower:alphaSorder = 2");     // NLO running
 pythia.readString("SpaceShower:alphaSvalue = 0.118"); // α_s(M_Z)
 pythia.readString("SpaceShower:pT0Ref = 1.56");       // IR regularization
-pythia.readString("SpaceShower:ecmPow = -0.033");     // Energy dependence
+pythia.readString("SpaceShower:ecmPow = 0.033");     // Energy dependence
 pythia.readString("SpaceShower:pTmaxFudge = 0.91");   // Max pT fudge factor
 ```
 
