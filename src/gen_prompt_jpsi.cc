@@ -67,37 +67,60 @@ int main(int argc, char *argv[]) {
   // pythia.readString("PhaseSpace:mHatMin = 2.5");  // Minimum invariant mass
   // pythia.readString("PhaseSpace:mHatMax = 4.0");  // Maximum invariant mass
 
-  // --- Tune Selection ---
-  pythia.readString("Tune:pp = 14"); // Monash 2013 tune (default)
-  // pythia.readString("Tune:pp = 21"); // A14 tune
+  // =========================================================================
+  // TUNE SELECTION - CMS CP5 (recommended for LHC mid-rapidity)
+  // =========================================================================
+  // CP5 is the CMS standard tune for Run 2/3, optimized for mid-rapidity
+  // Reference: CMS-PAS-GEN-17-001
+
+  // Use NNPDF3.1 NNLO PDF (requires LHAPDF)
+  pythia.readString("PDF:pSet = LHAPDF6:NNPDF31_nnlo_as_0118");
+
+  // CP5 MPI parameters
+  pythia.readString("MultipartonInteractions:pT0Ref = 1.41");
+  pythia.readString("MultipartonInteractions:ecmPow = 0.03344");
+  pythia.readString("MultipartonInteractions:coreFraction = 0.758");
+  pythia.readString("MultipartonInteractions:coreRadius = 0.63");
+
+  // CP5 Color Reconnection (MPI-based, mode 0)
+  pythia.readString("ColourReconnection:reconnect = on");
+  pythia.readString("ColourReconnection:range = 5.176");
+
+  // CP5 ISR/FSR settings
+  pythia.readString("SpaceShower:alphaSorder = 2");
+  pythia.readString("SpaceShower:alphaSvalue = 0.118");
+  pythia.readString("SpaceShower:pT0Ref = 1.56");
+  pythia.readString("SpaceShower:ecmPow = -0.033");
+  pythia.readString("SpaceShower:pTmaxFudge = 0.91");
+  pythia.readString("TimeShower:alphaSorder = 2");
+  pythia.readString("TimeShower:alphaSvalue = 0.118");
+
+  // CP5 Beam Remnant settings
+  pythia.readString("BeamRemnants:primordialKThard = 1.88");
+  pythia.readString("BeamRemnants:halfScaleForKT = 1.033");
+  pythia.readString("BeamRemnants:halfMassForKT = 0.978");
 
   // --- Parton Shower Settings ---
   pythia.readString("PartonLevel:MPI = on"); // Multi-parton interactions
   pythia.readString("PartonLevel:ISR = on"); // Initial state radiation
   pythia.readString("PartonLevel:FSR = on"); // Final state radiation
 
-  // --- Color Reconnection ---
+  // --- Alternative Tune Options (uncomment to use instead of CP5) ---
+  // pythia.readString("Tune:pp = 14"); // Monash 2013
+  // pythia.readString("Tune:pp = 21"); // A14 tune
+
+  // --- Color Reconnection Mode Override (optional) ---
   // Mode selection (ColourReconnection:mode):
-  //   0 = MPI-based (old default)
-  //   1 = New more QCD-based scheme (default in Monash)
+  //   0 = MPI-based (used by CP5)
+  //   1 = QCD-based scheme (Monash default)
   //   2 = Gluon-move model
   //   3 = QCD-inspired (SK I)
   //   4 = QCD-inspired (SK II)
-  pythia.readString("ColourReconnection:reconnect = on");
-  pythia.readString(
-      "ColourReconnection:mode = 1"); // QCD-based (Monash default)
+  // pythia.readString("ColourReconnection:mode = 0");  // Already set by CP5
 
-  // Fine-tuning parameters for mode 1:
-  // pythia.readString("ColourReconnection:range = 1.8");  // Range of CR
-  // pythia.readString("ColourReconnection:junctionCorrection = 1.2");
-
-  // For gluon-move model (mode 2):
-  // pythia.readString("ColourReconnection:m0 = 0.3");     // Effective gluon
-  // mass pythia.readString("ColourReconnection:fracGluon = 1.0");
-
-  // For QCD-inspired models (mode 3,4):
-  // pythia.readString("ColourReconnection:m2Lambda = 1.0");
-  // pythia.readString("ColourReconnection:nColours = 9");
+  // Fine-tuning for gluon-move model (mode 2):
+  // pythia.readString("ColourReconnection:m0 = 0.3");
+  // pythia.readString("ColourReconnection:fracGluon = 1.0");
 
   // --- J/psi Decay ---
   // Force J/psi -> mu+ mu- for easier analysis
