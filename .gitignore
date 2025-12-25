@@ -5,12 +5,10 @@ build/
 
 # Generated data
 *.hepmc3
-*.txt
-!requirements.txt
-
-# Output files
 output/
 results*/
+
+# Plots
 *.png
 
 # Docker artifacts

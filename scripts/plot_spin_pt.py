@@ -25,8 +25,8 @@ def main():
         input_file = sys.argv[1]
     
     try:
-        # Load: Type (0/1), pT, cosTheta
-        data = np.loadtxt(input_file)
+        # Load: Type (0/1), pT, cosTheta - only first 3 columns
+        data = np.loadtxt(input_file, usecols=(0, 1, 2))
     except Exception as e:
         print(f"Error: {e}")
         return
