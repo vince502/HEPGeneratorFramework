@@ -129,7 +129,20 @@ int main(int argc, char *argv[]) {
       Vec4 pStar = pythia.event[i].p();
       Vec4 pD0 = pythia.event[d0_idx].p();
       double pt = pStar.pT();
+      double rapidity = pStar.rap();
 
+      // === v2 Flow Analysis ===
+      // D* azimuthal angle relative to event plane
+      double phi_Dstar = std::atan2(pStar.py(), pStar.px());
+      double deltaPhi = phi_Dstar - psi_RP;
+      // Normalize to [-π/2, π/2] for v2 symmetry
+      while (deltaPhi > M_PI / 2)
+        deltaPhi -= M_PI;
+      while (deltaPhi < -M_PI / 2)
+        deltaPhi += M_PI;
+      double cos2DeltaPhi = std::cos(2.0 * (phi_Dstar - psi_RP));
+
+      // === Spin Alignment Analysis ===
       // Boost to D* rest frame
       Vec4 pD0_rf = boostToRest(pD0, pStar);
       Vec4 n_rf = boostToRest(nLab, pStar);
@@ -143,8 +156,12 @@ int main(int argc, char *argv[]) {
                           (pD0Mag * nMag);
         bool nonPrompt = isNonPrompt(i, pythia.event);
 
-        // Output: type(0=prompt,1=nonprompt) pt cosTheta
-        fout << (nonPrompt ? 1 : 0) << " " << pt << " " << cosTheta << "\n";
+        // Output: type pt rapidity cosTheta cos2DeltaPhi
+        // type: 0=prompt, 1=non-prompt
+        // cosTheta: for spin alignment (ρ00)
+        // cos2DeltaPhi: for v2 = <cos(2ΔΦ)>
+        fout << (nonPrompt ? 1 : 0) << " " << pt << " " << rapidity << " "
+             << cosTheta << " " << cos2DeltaPhi << "\n";
 
         if (nonPrompt)
           countNonPrompt++;
