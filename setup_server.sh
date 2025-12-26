@@ -31,15 +31,6 @@ if [ ! -d "lhapdf_data/NNPDF31_nnlo_as_0118" ]; then
     cd ..
 fi
 
-# Ensure basic LHAPDF config files are present to avoid MetadataError
-IMAGE_NAME="cmsana-gen:py8313-evtgen200"
-if [ ! -f "lhapdf_data/lhapdf.conf" ]; then
-    echo "Extracting LHAPDF configuration from image..."
-    # Temporary run to grab files
-    docker run --rm $IMAGE_NAME cat /opt/hep/share/LHAPDF/lhapdf.conf > lhapdf_data/lhapdf.conf || true
-    docker run --rm $IMAGE_NAME cat /opt/hep/share/LHAPDF/pdfsets.index > lhapdf_data/pdfsets.index || true
-fi
-
 # 3. Pull or Build Docker Image
 IMAGE_NAME="cmsana-gen:py8313-evtgen200"
 if ! docker images | grep -q "cmsana-gen"; then
@@ -55,7 +46,7 @@ fi
 
 # 4. Compile Executables
 echo "Compiling generators..."
-docker run --rm -v "$(pwd):/work" -v "$(pwd)/lhapdf_data:/opt/hep/share/LHAPDF" $IMAGE_NAME \
+docker run --rm -v "$(pwd):/work" -v "$(pwd)/lhapdf_data:/work/lhapdf_data" $IMAGE_NAME \
     bash -c "mkdir -p build && cd build && cmake .. && make -j$(nproc)"
 
 echo ""

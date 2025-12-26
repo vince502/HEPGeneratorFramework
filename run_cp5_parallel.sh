@@ -32,7 +32,7 @@ echo "=================================================="
 
 # Build before running to ensure latest changes are included
 echo "Rebuilding gen_d0_study..."
-docker run --rm -v "$(pwd):/work" -v "$LHAPDF_DIR:/opt/hep/share/LHAPDF" "$IMAGE_NAME" \
+docker run --rm -v "$(pwd):/work" -v "$LHAPDF_DIR:/work/lhapdf_data" "$IMAGE_NAME" \
     bash -c "mkdir -p /work/build && cd /work/build && cmake .. && make -j$NUM_CORES gen_d0_study"
 
 # Launch parallel jobs
@@ -42,7 +42,7 @@ for i in $(seq 1 $NUM_CORES); do
     CORE_OUT="/work/output_cp5/out_core_$i.txt"
     echo "Launching Core $i (Seed: $SEED)..."
     
-    docker run --rm -v "$(pwd):/work" -v "$LHAPDF_DIR:/opt/hep/share/LHAPDF" "$IMAGE_NAME" \
+    docker run --rm -v "$(pwd):/work" -v "$LHAPDF_DIR:/work/lhapdf_data" "$IMAGE_NAME" \
         /work/build/gen_d0_study $EVENTS_PER_CORE $SEED "$CORE_OUT" > "$OUTPUT_DIR/log_core_$i.log" 2>&1 &
     
     pids+=($!)
