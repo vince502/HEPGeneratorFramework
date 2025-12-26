@@ -10,17 +10,41 @@
 EVENTS=$1
 SEED=$2
 OUTFILE=$3
+MODE=${4:-prompt} # prompt/nonprompt/d0
+ANALYSIS=${5:-none}
 
 echo "Starting job on $(hostname)"
 echo "Events: $EVENTS"
 echo "Seed: $SEED"
-echo "Output: $OUTFILE"
+echo "Mode: $MODE"
+echo "Analysis: $ANALYSIS"
 
-# Make sure we can find the executable
-# If we transferred the 'build' folder, it will be in the landing directory
-chmod +x ./build/gen_d0_study
+# Define executables
+if [ "$MODE" == "prompt" ]; then
+    GEN_EXEC="./build/gen_prompt_jpsi"
+elif [ "$MODE" == "nonprompt" ]; then
+    GEN_EXEC="./build/gen_bpkjpsi"
+else
+    GEN_EXEC="./build/gen_d0_study"
+fi
 
-# Run the generator
-./build/gen_d0_study $EVENTS $SEED $OUTFILE
+if [ "$ANALYSIS" != "none" ]; then
+    echo "Running with Rivet Pipeline..."
+    FIFO="events.fifo"
+    rm -f $FIFO && mkfifo $FIFO
+    
+    # Run Rivet in background
+    # Note: Using the built-in rivet-service runner if available
+    rivet-service "rivet/${ANALYSIS}.cc" "$ANALYSIS" "$FIFO" "$OUTFILE" &
+    RIVET_PID=$!
+    
+    # Run Generator in foreground
+    $GEN_EXEC $EVENTS $FIFO
+    
+    wait $RIVET_PID
+else
+    echo "Running Standard Generation..."
+    $GEN_EXEC $EVENTS $SEED $OUTFILE
+fi
 
 echo "Job finished with exit code $?"

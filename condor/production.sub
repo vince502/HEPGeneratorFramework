@@ -7,7 +7,7 @@ docker_image            = ghcr.io/vince502/hepgeneratorframework:main
 
 # The script to run inside the container
 executable              = condor/job_wrapper.sh
-arguments               = $(Events) $(Seed) $(OutFile)
+arguments               = $(Events) $(Seed) $(OutFile) $(Mode) $(Analysis)
 
 # Output files for logging
 output                  = condor/logs/job.$(ClusterId).$(ProcId).out

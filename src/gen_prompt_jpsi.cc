@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
   pythia.readString("SpaceShower:alphaSorder = 2");
   pythia.readString("SpaceShower:alphaSvalue = 0.118");
   pythia.readString("SpaceShower:pT0Ref = 1.56");
-  pythia.readString("SpaceShower:ecmPow = -0.033");
+  pythia.readString("SpaceShower:ecmPow = 0.033");
   pythia.readString("SpaceShower:pTmaxFudge = 0.91");
   pythia.readString("TimeShower:alphaSorder = 2");
   pythia.readString("TimeShower:alphaSvalue = 0.118");

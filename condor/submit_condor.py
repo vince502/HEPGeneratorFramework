@@ -7,7 +7,9 @@ def main():
     parser = argparse.ArgumentParser(description='Submit HEP jobs to HTCondor')
     parser.add_argument('--total-events', type=int, default=1000000, help='Total events to generate')
     parser.add_argument('--events-per-job', type=int, default=100000, help='Events per job')
-    parser.add_argument('--output-prefix', type=str, default='output_cp5', help='Prefix for output files')
+    parser.add_argument('--mode', type=str, default='prompt', choices=['prompt', 'nonprompt', 'd0'], help='Generation mode')
+    parser.add_argument('--rivet', type=str, default='none', help='Rivet analysis name (e.g. JpsiJet_RivetAnalyzer)')
+    parser.add_argument('--output-prefix', type=str, default='output_jpsijet', help='Prefix for output files')
     args = parser.parse_args()
 
     # Create logs directory
@@ -25,13 +27,12 @@ def main():
     # Generate the queue parameters
     queue_file = "condor/queue_list.txt"
     with open(queue_file, "w") as f:
-        f.write("Events, Seed, OutFile\n")
+        f.write("Events, Seed, OutFile, Mode, Analysis\n")
         for i in range(num_jobs):
             seed = 1000 + i
             # Correct path for inside the container/worker node
-            # HTCondor transfers to current working dir, so just use filename
-            outfile = f"output_{i}.txt"
-            f.write(f"{args.events_per_job}, {seed}, {outfile}\n")
+            outfile = f"output_{i}.yoda" if args.rivet != 'none' else f"output_{i}.txt"
+            f.write(f"{args.events_per_job}, {seed}, {outfile}, {args.mode}, {args.rivet}\n")
 
     # Add the queue command to a temporary .sub file
     sub_file = "condor/temp_production.sub"
@@ -41,7 +42,7 @@ def main():
     with open(sub_file, "w") as f:
         f.write(common_sub)
         f.write(f"\n# Queue jobs\n")
-        f.write(f"queue Events, Seed, OutFile from {queue_file}\n")
+        f.write(f"queue Events, Seed, OutFile, Mode, Analysis from {queue_file}\n")
 
     # Submit
     try:
