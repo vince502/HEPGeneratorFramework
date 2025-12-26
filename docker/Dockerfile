@@ -99,6 +99,7 @@ RUN dnf -y update && dnf -y install --allowerasing \
 ENV PREFIX=/opt/hep
 ENV PATH=${PREFIX}/bin:$PATH
 ENV LD_LIBRARY_PATH=${PREFIX}/lib64:${PREFIX}/lib:$LD_LIBRARY_PATH
+ENV LHAPDF_DATA_PATH=${PREFIX}/share/LHAPDF:/work/lhapdf_data
 
 COPY --from=builder /opt/hep /opt/hep
 
