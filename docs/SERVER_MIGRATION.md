@@ -40,3 +40,25 @@ I've updated `run_cp5_parallel.sh` (or `run_parallel_server.sh`) to automaticall
 # Example: Generate 1M events using all available cores
 TOTAL_EVENTS=1000000 bash run_cp5_parallel.sh
 ```
+
+## 5. Massive Production with HTCondor
+
+For extremely large production (e.g., 100M+ events) on a cluster:
+
+### 1. Preparation
+Ensure you have run `setup_server.sh` or the manual steps above to download PDFs and build the binaries.
+
+### 2. Submission
+Use the provided Python helper to submit many jobs:
+
+```bash
+# Generate 10M events, splitting into 100 jobs of 100k events each
+python3 condor/submit_condor.py --total-events 10000000 --events-per-job 100000
+```
+
+### 3. Monitoring & Merging
+```bash
+condor_q
+# Once finished:
+cat condor/output/*.txt > output_massive_combined.txt
+```

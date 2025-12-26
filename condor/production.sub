@@ -1,0 +1,34 @@
+# production.sub - HTCondor submission file
+# =============================================================================
+
+# Define the image from GHCR
+universe                = docker
+docker_image            = ghcr.io/vince502/hepgeneratorframework:main
+
+# The script to run inside the container
+executable              = condor/job_wrapper.sh
+arguments               = $(Events) $(Seed) $(OutFile)
+
+# Output files for logging
+output                  = condor/logs/job.$(ClusterId).$(ProcId).out
+error                   = condor/logs/job.$(ClusterId).$(ProcId).err
+log                     = condor/logs/job.$(ClusterId).log
+
+# Transfer input files to the worker node
+# We need the build directory (binaries) and the decays directory
+transfer_input_files    = build/, decays/
+
+# We don't want to transfer the whole lhapdf_data folder if possible
+# But if it's required and not in the image, we must. 
+# In our updated Dockerfile, it looks in /work/lhapdf_data.
+# In Condor, files are transferred to the top-level directory.
+# So we link it or transfer it.
+transfer_input_files    = build, decays, lhapdf_data
+
+# Requirements and Resources
+request_cpus            = 1
+request_memory          = 2GB
+request_disk            = 5GB
+
+# Don't forget to create the logs directory!
+# queue command will be handled by the submit script
