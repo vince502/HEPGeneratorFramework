@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
   // EvtGen Setup
   std::string evtGenDec = "/opt/hep/share/EvtGen/DECAY.DEC";
   std::string evtGenPdt = "/opt/hep/share/EvtGen/evt.pdl";
-  std::string userDec = "/work/run/D0SpinAlignment.dec";
+  std::string userDec = "decays/D0SpinAlignment.dec";
   EvtExternalGenList genList;
   auto evtgen =
       std::make_shared<EvtGenDecays>(&pythia, evtGenDec, evtGenPdt, &genList,

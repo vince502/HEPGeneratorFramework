@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
   std::string evtGenPdtFile = "/opt/hep/share/EvtGen/evt.pdl";
 
   // User decay file for B+ -> K+ J/psi (mu+mu-)
-  std::string userDecFile = "run/BpKJpsi.dec";
+  std::string userDecFile = "decays/BpKJpsi.dec";
 
   // Create EvtGen object with external generator list (for
   // Pythia/Photos/Tauola)
