@@ -263,3 +263,26 @@ pythia.readString("Next:numberShowProcess = 0"); // Suppress process
 pythia.readString("Next:numberShowEvent = 0");   // Suppress event listing
 pythia.readString("Next:numberCount = 1000");    // Progress every N events
 ```
+---
+
+## Rivet Pipeline Configuration
+
+The Rivet analysis pipeline relies on environment variables and the `rivet-service` runner.
+
+### Real-time Streaming (FIFO)
+The pipeline script `run_jpsijet_pipeline.sh` manages a Unix FIFO (`events.fifo`). 
+- **Buffer Size**: Controlled by the OS pipe capacity.
+- **Backpressure**: If Rivet is slower than Pythia, Pythia will automatically pause until Rivet reads from the pipe, ensuring no event loss.
+
+### Environment Variables
+These are configured in `docker/Dockerfile.rivet`:
+- `LHAPDF_DATA_PATH`: List of directories to search for PDF sets.
+- `RIVET_ANALYSIS_PATH`: Rivet looks here for compiled `.so` plugins (set to `$PWD` by the service).
+- `PYTHONPATH`: Required for YODA and Rivet Python tools (`yodals`, `rivet-mkhtml`).
+
+### Output Management
+The `-o` flag in the `rivet` command controls the output filename:
+```bash
+rivet -a JpsiJet_RivetAnalyzer events.fifo -o my_results.yoda
+```
+Multiple YODA files from different batch jobs can be merged using `yodamerge`.

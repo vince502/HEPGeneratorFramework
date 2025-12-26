@@ -1,126 +1,94 @@
-# HEP Event Generation with Pythia8 + EvtGen + Angantyr
+# HEP Generation & Analysis Framework
 
-[![Docker Build](https://github.com/vince502/HEPGeneratorFramework/actions/workflows/docker-build.yml/badge.svg)](https://github.com/vince502/HEPGeneratorFramework/actions/workflows/docker-build.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+A unified framework for Monte Carlo event generation and real-time Rivet analysis, optimized for Heavy Flavor and Heavy Ion studies. This repository integrates Pythia 8, EvtGen, and Rivet 4 into a containerized pipeline designed for both local development and massive scale-out on HTCondor.
 
-A containerized Monte Carlo event generation framework for Heavy Ion and Heavy Flavor physics studies. Features:
+## 1. Key Features
+- **Generators**: Pythia 8.313 (with OniaShower and Angantyr) & EvtGen 2.2.3.
+- **Analysis**: Rivet 4.1.0 & YODA 2.1.2 integrated via real-time FIFO data streaming.
+- **Physics**: CMS CP5 Tune synchronized across all production modes.
+- **Portability**: Fully containerized using Docker/Singularity for bit-reproducible results.
 
-- **Pythia 8.313** - Hard scattering, parton shower, hadronization, OniaShower
-- **EvtGen 2.2.3** - Heavy flavor decays with proper angular distributions
-- **Angantyr** - Heavy Ion collisions (pPb, PbPb)
-- **Photos++ 3.64** - QED final state radiation
-- **Tauola++ 1.1.8** - Polarized tau decays
-- **HepMC3 3.3.0** - Standard event record format
+---
 
-## Quick Start
+## 2. Setup Guide
 
-### Pull Pre-built Image
-```bash
-docker pull ghcr.io/vince502/hepgeneratorframework:latest
-```
-
-### Build Locally
+### Local Clone & Preparation
 ```bash
 git clone https://github.com/vince502/HEPGeneratorFramework.git
 cd HEPGeneratorFramework
-
-# Build for current platform
-docker build -f docker/Dockerfile -t hep-generation:latest .
-
-# Cross-platform build (requires buildx)
-docker buildx build --platform linux/amd64,linux/arm64 \
-    -f docker/Dockerfile -t hep-generation:latest .
 ```
 
-## Usage Examples
-
-### 1. Prompt J/ψ Production (OniaShower)
+### Building the Environments
+The framework uses two specialized Docker images to isolate generation from analysis:
 ```bash
-docker run --rm -v $(pwd)/output:/work hep-generation:latest \
-    ./build/gen_prompt_jpsi 10000 prompt_jpsi.hepmc3
+# 1. Build the Generator environment
+docker build -t cmsana-gen -f docker/Dockerfile .
+
+# 2. Build the Rivet Analysis environment (uses official Rivet 4 base)
+docker build -t cmsana-rivet -f docker/Dockerfile.rivet .
 ```
 
-### 2. B+ → K+ J/ψ(μμ) Signal
+### Compiling the C++ Generators
+The generators are compiled inside the `cmsana-gen` environment. Use the provided setup script to handle the compilation and LHAPDF data:
 ```bash
-docker run --rm -v $(pwd)/output:/work hep-generation:latest \
-    ./build/gen_bpkjpsi 10000 signal_events.hepmc3
+bash setup_server.sh
 ```
 
-### 3. Heavy Ion Collisions (Pb-Pb)
-```bash
-docker run --rm -v $(pwd)/output:/work hep-generation:latest \
-    ./build/gen_angantyr 100 pbpb_events.hepmc3
-```
+---
 
-### 4. D0 Spin Alignment Study (Streamlined)
-```bash
-docker run --rm -v $(pwd)/output:/work hep-generation:latest \
-    bash -c "cd build && ./gen_d0_study 10000 1234 /work/results.txt"
+## 3. Running Analyses
 
-python3 scripts/plot_spin_pt.py output/results.txt
-```
-
-## Generators
-
-| Generator | Description | Output |
-|-----------|-------------|--------|
-| `gen_prompt_jpsi` | Prompt J/ψ via OniaShower (charmonium) | HepMC3 |
-| `gen_bpkjpsi` | B+ → K+ J/ψ(μμ) signal | HepMC3 |
-| `gen_angantyr` | Heavy Ion test (pPb, PbPb) | HepMC3 |
-| `gen_d0_study` | D0 spin alignment (Pb-Pb) | Text |
-| `analyze_spin` | HepMC3 analyzer for D* | Text |
-
-## Tweaking Pythia Parameters
-
-The `gen_prompt_jpsi.cc` file has a clearly marked **CONFIGURATION** section where you can modify:
-
-```cpp
-// --- Beam Settings ---
-double sqrtS = 13600.0;  // Center-of-mass energy [GeV]
-
-// --- Charmonium Production ---
-pythia.readString("Charmonium:all = on");  // All charmonium processes
-
-// --- Phase Space Cuts ---
-double pTHatMin = 0.0;   // Minimum pT of hard process
-
-// --- Color-Octet Matrix Elements ---
-// pythia.readString("Charmonium:OJpsi(3S1)[3S1(8)] = 0.0119");
-
-// --- J/psi Decay ---
-pythia.readString("443:onIfMatch = 13 -13");  // Force μ+μ-
-```
-
-## Physics Models
-
-### Prompt J/ψ (OniaShower)
-- Color-singlet and color-octet contributions
-- Configurable NRQCD matrix elements
-- pp collisions at LHC energies
-
-### D0 Spin Alignment
-- Quantization axis: Event plane normal (B-field direction)
-- Lorentz boost to D* rest frame
-- Prompt/Non-prompt classification
-
-## Multi-Platform Support
-
-GitHub Actions builds Docker images for:
-- `linux/amd64` (Intel/AMD x86_64)
-- `linux/arm64` (Apple Silicon M1/M2/M3)
-
-## Development
+### J/psi in Jets (Real-time Pipeline)
+This pipeline streams events directly from Pythia to Rivet via a FIFO pipe, saving disk space by avoiding large intermediate HepMC files.
 
 ```bash
-docker run -it --rm -v $(pwd):/work hep-generation:latest bash
-cd build && cmake .. && make -j$(nproc)
+# Usage: bash run_jpsijet_pipeline.sh [events] [mode: prompt/nonprompt]
+bash run_jpsijet_pipeline.sh 50000 prompt
+```
+Outputs: `results_prompt.yoda` containing histograms.
+
+### D0 Spin Alignment (Pb-Pb)
+Generate D0 candidates in Heavy Ion collisions with the CP5 tune:
+```bash
+./run_cp5_parallel.sh [total_events] [num_cores]
 ```
 
-## Citation
+---
 
-- Pythia 8: [arXiv:2203.11601](https://arxiv.org/abs/2203.11601)
-- EvtGen: [Comput.Phys.Commun. 181 (2010) 1721](https://doi.org/10.1016/j.cpc.2010.05.025)
+## 4. Batch Production (HTCondor)
+For large-scale production, use the Python orchestrator to submit jobs to a cluster. It handles unique seeds and output indexing automatically.
 
-## License
+```bash
+# Submit 100 jobs of 100k events each (Prompt J/psi in Jets)
+python3 condor/submit_condor.py \
+    --total-events 10000000 \
+    --events-per-job 100000 \
+    --mode prompt \
+    --rivet JpsiJet_RivetAnalyzer
+```
 
-MIT License - see [LICENSE](LICENSE)
+---
+
+## 5. Customization Documentation
+
+### Modifying Pythia Settings
+The C++ generators in `src/` (e.g., `gen_prompt_jpsi.cc`) contain a synchronized **CMS CP5 Tune** block. 
+- To change the **pT-hat min**, modify `PhaseSpace:pTHatMin`.
+- To adjust **MPI/ISR/FSR**, edit the respective `MultipartonInteractions` or `SpaceShower` readString calls.
+- **Note**: Ensure you recompile (`bash setup_server.sh`) after modifying C++ source files.
+
+### Modifying Rivet Histograms
+Your analysis logic lives in `rivet/JpsiJet_RivetAnalyzer.cc`. 
+- **Adding Histograms**: Register them in the `init()` function using `book(_h_myhist, "MyHist", 50, 0, 100)`.
+- **Applying Cuts**: Modify the `analyze()` function to update J/psi or Jet selection criteria.
+- **Real-time Build**: The `cmsana-rivet` container automatically re-compiles your `.cc` code every time you start the pipeline, so there is no need to manually build the plugin.
+
+### Viewing Results
+Use the containerized YODA tools to inspect your output:
+```bash
+# List histograms
+docker run --rm -v $(pwd):/work cmsana-rivet yodals /work/results_prompt.yoda
+
+# Generate HTML gallery
+docker run --rm -v $(pwd):/work cmsana-rivet rivet-mkhtml /work/results_prompt.yoda
+```

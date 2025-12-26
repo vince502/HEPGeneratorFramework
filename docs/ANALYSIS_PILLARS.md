@@ -1,163 +1,69 @@
-# Analysis Pillars
+# Physics Analysis Pillars
 
-This document describes the main physics analyses supported by this framework.
+This framework is built around several core physics programs in Heavy Flavor and Heavy Ion collisions. Each analysis uses a specialized C++ generator and an associated analysis workflow.
 
 ---
 
-## 1. Prompt Charmonium Production (OniaShower)
+## 1. J/psi in Jets ($z$ Variable Analysis)
 
-**Generator:** `gen_prompt_jpsi`
+**Generators**: `gen_prompt_jpsi`, `gen_bpkjpsi`  
+**Tooling**: Rivet 4 + YODA 2
 
 ### Physics Overview
-Prompt J/ψ and other charmonium states are produced through the color-singlet and color-octet mechanisms in pp collisions. This is modeled using Pythia8's OniaShower implementation based on Non-Relativistic QCD (NRQCD).
+This analysis investigates the fragmentation of $J/\psi$ within jets, focusing on the momentum fraction $z = p_{T, J/\psi} / p_{T, \text{jet}}$.
+- **Prompt**: Produced via Pythia's OniaShower (NRQCD mechanisms).
+- **Non-prompt**: Produced via B-meson decays handled by EvtGen.
 
-### Production Mechanisms
-| Process | Type | Description |
-|---------|------|-------------|
-| g g → J/ψ g | Color-Singlet | Leading order QCD |
-| g g → ccbar[3S1(8)] g | Color-Octet | Higher pT contribution |
-| q g → ccbar[3S1(8)] q | Color-Octet | Important at high pT |
-| q qbar → ccbar[3S1(8)] g | Color-Octet | Subdominant |
+### Workflow: The FIFO Pipeline
+To avoid storing massive HepMC files on disk, we stream events in real-time:
+1. **Generator**: Streams HepMC3 events into a Unix FIFO pipe.
+2. **Rivet Service**: Subscribes to the pipe, analyzes events, and populates histograms in memory.
+3. **Output**: Only the final `.yoda` histogram file is saved to disk.
 
-### Key Observables
-- Differential cross-section dσ/dpT
-- Polarization λθ, λφ, λθφ (helicity frame)
-- Rapidity distribution dσ/dy
-
-### Usage
-```bash
-./build/gen_prompt_jpsi 10000 prompt_jpsi.hepmc3
-```
+### Implementation
+- **Selection**: Muons with $|\eta| < 2.4$, $p_T > 6.5$ GeV. Anti-$k_t$ $R=0.4$ jets.
+- **Reference**: `rivet/JpsiJet_RivetAnalyzer.cc`
 
 ---
 
-## 2. B+ Signal Production
+## 2. D0 Spin Alignment in Heavy Ions
 
-**Generator:** `gen_bpkjpsi`
+**Generator**: `gen_d0_study`  
+**Tooling**: C++ Analyzer + Python/ROOT
 
 ### Physics Overview
-Production of B+ mesons through bb̄ production, with exclusive decay chain:
-```
-B+ → K+ J/ψ(→ μ+μ-)
-```
+Measures the spin density matrix element $\rho_{00}$ of $D^0$ mesons relative to the event plane normal. A value of $\rho_{00} \neq 1/3$ indicates spin alignment, potentially caused by the strong magnetic field or global vorticity in the Quark-Gluon Plasma (QGP).
 
-Uses EvtGen for proper angular distributions and branching fractions.
-
-### Key Features
-- CP5 tune for underlying event
-- EvtGen for B meson decay modeling
-- Photos++ for QED FSR from muons
-- Proper lifetime and decay vertex
-
-### Key Observables
-- ct* (proper decay length)
-- B+ pT spectrum
-- μ+μ- invariant mass resolution
-
-### Usage
-```bash
-./build/gen_bpkjpsi 10000 bplus_signal.hepmc3
-```
+### Methodology
+1. **Collision**: Pb-Pb at $\sqrt{s_{NN}} = 5.02$ TeV via Angantyr.
+2. **Reconstruction**: Identify $D^* \to D^0 \pi_{soft}$ decay chains.
+3. **Reference Frame**: Perform a Lorentz boost to the $D^*$ rest frame.
+4. **Observable**: Extract the decay angle $\theta^*$ relative to the quantization axis.
 
 ---
 
-## 3. D0 Spin Alignment in Heavy Ions
+## 3. Heavy Ion Collisions (Angantyr Model)
 
-**Generator:** `gen_d0_study`
+**Generator**: `gen_angantyr`
 
 ### Physics Overview
-Studies the spin alignment of D0 mesons (from D* decay) in Pb-Pb collisions. The spin density matrix element ρ00 measures the alignment relative to the event plane normal (magnetic field direction).
+The master generator for nucleus-nucleus collisions. It models nuclear overlap geometries and handles multiple parton interactions across different nucleon pairs.
 
-### Physics Motivation
-- In a polarizing medium (QGP with strong B-field), vector mesons may show alignment
-- ρ00 ≠ 1/3 indicates spin polarization
-- Connects to vorticity and magnetic field in QGP
-
-### Analysis Method
-1. Generate Pb-Pb events with Angantyr
-2. Assign random event plane ΨRP
-3. Find D* → D0 π decays
-4. Boost to D* rest frame
-5. Calculate cos θ* relative to boosted RP normal
-6. Fit cos θ* distribution to extract ρ00
-
-### Key Observables
-- ρ00 vs pT
-- ρ00 vs centrality
-- Prompt vs non-prompt separation
-
-### Usage
-```bash
-./build/gen_d0_study 10000 1234 output.txt
-python3 scripts/plot_spin_pt.py output.txt
-```
+### Capability Matrix
+- **p-Pb**: Proton-Lead collisions (asymmetric).
+- **Pb-Pb**: Symmetric Heavy Ion collisions.
+- **nPDFs**: Integrates EPPS16/nCTEQ15 nuclear PDFs via LHAPDF.
 
 ---
 
-## 4. Heavy Ion Collisions (Angantyr)
+## 4. Heavy Flavor Decays (EvtGen Integration)
 
-**Generator:** `gen_angantyr`
+**Generator**: `gen_bpkjpsi`
 
 ### Physics Overview
-Simulates proton-nucleus and nucleus-nucleus collisions using the Angantyr model in Pythia8. Models sub-collisions, wounded nucleons, and collective effects.
+Pythia is used for the hard process and parton shower, while **EvtGen** handles the transition from $b$-quarks to $B$-mesons and their subsequent complex decays. This ensures accurate branching fractions and angular distributions for decay chains like $B^+ \to K^+ J/\psi(\to \mu\mu)$.
 
-### Supported Systems
-| System | Beam IDs | Typical √sNN |
-|--------|----------|--------------|
-| p-Pb | 2212, 1000822080 | 5.02, 8.16 TeV |
-| Pb-Pb | 1000822080, 1000822080 | 2.76, 5.02 TeV |
-| p-p | 2212, 2212 | 5.02, 13.6 TeV |
-
-### Key Features
-- Geometric modeling of nuclear overlap
-- Multiple parton interactions per nucleon pair
-- String shoving and rope hadronization (optional)
-
-### Usage
-```bash
-./build/gen_angantyr 100 pbpb_events.hepmc3
-```
-
----
-
-## 5. HepMC3 Analysis Tools
-
-**Analyzer:** `analyze_spin`
-
-### Purpose
-Reads HepMC3 event files and extracts physics observables for the D0 spin alignment study.
-
-### Features
-- Recursive ancestry check for prompt/non-prompt
-- Lorentz boost to D* rest frame
-- Event plane extraction from HepMC3 attributes
-
-### Output Format
-```
-# type(0=prompt,1=nonprompt) pT cosTheta
-0 5.234 0.412
-1 12.891 -0.156
-```
-
----
-
-## Analysis Workflow Summary
-
-```
-┌─────────────────┐     ┌──────────────┐     ┌────────────────┐
-│  gen_prompt_jpsi│     │ gen_bpkjpsi  │     │  gen_d0_study  │
-│  (OniaShower)   │     │   (EvtGen)   │     │   (Angantyr)   │
-└────────┬────────┘     └──────┬───────┘     └───────┬────────┘
-         │                     │                     │
-         v                     v                     v
-    ┌─────────┐          ┌─────────┐           ┌─────────┐
-    │ HepMC3  │          │ HepMC3  │           │ Text    │
-    │ Output  │          │ Output  │           │ Output  │
-    └────┬────┘          └────┬────┘           └────┬────┘
-         │                    │                     │
-         v                    v                     v
-    ┌─────────────────────────────────────────────────────┐
-    │                  Analysis Scripts                    │
-    │     (plot_spin.py, plot_spin_pt.py, Rivet, ...)    │
-    └─────────────────────────────────────────────────────┘
-```
+### Key Technologies
+- **Photos++**: QED final state radiation from muons.
+- **Tauola++**: Precision $\tau$-lepton decays.
+- **LHA Interface**: Correct translation of color strings to decay-ready hadrons.
