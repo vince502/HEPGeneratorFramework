@@ -7,6 +7,7 @@ FROM hepstore/rivet:4.1.0
 ENV LHAPDF_DATA_PATH=/usr/local/share/LHAPDF:/work/lhapdf_data
 ENV PATH=/usr/local/bin:$PATH
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+ENV PYTHONPATH=/usr/local/lib/python3.10/site-packages:$PYTHONPATH
 
 # Work in /work to match our generator environment
 WORKDIR /work
