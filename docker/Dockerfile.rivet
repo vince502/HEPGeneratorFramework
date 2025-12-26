@@ -1,35 +1,51 @@
 # syntax=docker/dockerfile:1.6
-FROM cmsana-gen:py8313-evtgen200 AS base
+FROM cmsana-gen:py8313-evtgen200 AS builder
 
 # --- Additional Build Dependencies for Rivet ---
 USER root
 RUN dnf -y install \
+    git autoconf automake libtool \
     gsl-devel \
     boost-devel \
     python3-devel \
+    zlib-devel \
     && dnf clean all
 
 ENV PREFIX=/opt/hep
 WORKDIR ${PREFIX}/src
 
-# --- YODA ---
-RUN git clone --depth 1 -b yoda-1.9.7 https://gitlab.com/hepcedar/yoda.git && \
+# --- YODA 2.1.2 ---
+# We use -O0 to prevent the compiler from exhausting memory on heavy templates (ReaderYODA)
+RUN git clone --depth 1 -b yoda-2.1.2 https://gitlab.com/hepcedar/yoda.git && \
     cd yoda && autoreconf -i && \
-    ./configure --prefix=${PREFIX} && \
-    make -j$(nproc) && make install
+    ./configure --prefix=${PREFIX} --disable-pyext CXXFLAGS="-O0" && \
+    make -j1 && make install
 
-# --- FastJet ---
+# --- FastJet 3.4.0 ---
 RUN curl -L -o fastjet-3.4.0.tar.gz http://fastjet.fr/repo/fastjet-3.4.0.tar.gz && \
     tar -xzf fastjet-3.4.0.tar.gz && \
     cd fastjet-3.4.0 && \
-    ./configure --prefix=${PREFIX} --enable-allplugins && \
+    ./configure --prefix=${PREFIX} --enable-allplugins CXXFLAGS="-O1" && \
     make -j$(nproc) && make install
 
-# --- Rivet 3.1.9 ---
-RUN git clone --depth 1 -b rivet-3.1.9 https://gitlab.com/hepcedar/rivet.git && \
+# --- FastJet Contrib ---
+RUN curl -L -o fjcontrib-1.054.tar.gz http://fastjet.hepforge.org/contrib/downloads/fjcontrib-1.054.tar.gz && \
+    tar -xzf fjcontrib-1.054.tar.gz && \
+    cd fjcontrib-1.054 && \
+    ./configure --prefix=${PREFIX} CXXFLAGS="-O1" && \
+    make -j$(nproc) && make install && make fragile-shared-install
+
+# --- Rivet 4.1.0 ---
+# Rivet 4 also benefits from lower optimization during build to save RAM
+RUN git clone --depth 1 -b rivet-4.1.0 https://gitlab.com/hepcedar/rivet.git && \
     cd rivet && autoreconf -i && \
-    ./configure --prefix=${PREFIX} --with-yoda=${PREFIX} --with-fastjet=${PREFIX} --with-hepmc3=${PREFIX} && \
-    make -j$(nproc) && make install
+    ./configure --prefix=${PREFIX} \
+    --with-yoda=${PREFIX} \
+    --with-fastjet=${PREFIX} \
+    --with-hepmc3=${PREFIX} \
+    --with-lhapdf=${PREFIX} \
+    --disable-pyext CXXFLAGS="-O0" && \
+    make -j1 && make install
 
 # --- Final Service Image ---
 FROM cmsana-gen:py8313-evtgen200
@@ -39,7 +55,7 @@ ENV PATH=${PREFIX}/bin:$PATH
 ENV LD_LIBRARY_PATH=${PREFIX}/lib64:${PREFIX}/lib:$LD_LIBRARY_PATH
 ENV LHAPDF_DATA_PATH=${PREFIX}/share/LHAPDF:/work/lhapdf_data
 
-COPY --from=0 ${PREFIX} ${PREFIX}
+COPY --from=builder /opt/hep /opt/hep
 
 # Setup the runtime environment
 WORKDIR /work
