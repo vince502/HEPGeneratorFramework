@@ -88,6 +88,8 @@ int main(int argc, char *argv[]) {
 
   // CP5 Beam Remnant settings
   pythia.readString("BeamRemnants:primordialKThard = 1.88");
+  pythia.readString("BeamRemnants:halfScaleForKT = 1.033");
+  pythia.readString("BeamRemnants:halfMassForKT = 0.978");
 
   // Reduce output verbosity
   pythia.readString("Next:numberShowInfo = 0");

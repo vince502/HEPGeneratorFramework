@@ -57,19 +57,34 @@ int main(int argc, char *argv[]) {
   // =========================================================================
   pythia.readString("Tune:pp = 14"); // Monash 2013 as base
 
-  // CP5 specific parameters
-  pythia.readString("Tune:ee = 7");
+  // =========================================================================
+  // TUNE SELECTION - CMS CP5 (Synchronized with D0 Study)
+  // =========================================================================
+  // PDF: NNPDF3.1 NNLO
+  pythia.readString("PDF:pSet = LHAPDF6:NNPDF31_nnlo_as_0118");
+
+  // CP5 MPI parameters
   pythia.readString("MultipartonInteractions:pT0Ref = 1.41");
   pythia.readString("MultipartonInteractions:ecmPow = 0.03344");
-  pythia.readString("MultipartonInteractions:coreFraction = 0.63");
-  pythia.readString("MultipartonInteractions:coreRadius = 0.4");
+  pythia.readString("MultipartonInteractions:coreFraction = 0.758");
+  pythia.readString("MultipartonInteractions:coreRadius = 0.63");
+
+  // CP5 Color Reconnection
+  pythia.readString("ColourReconnection:reconnect = on");
   pythia.readString("ColourReconnection:range = 5.176");
-  pythia.readString("SigmaTotal:zeroAXB = off");
+
+  // CP5 ISR/FSR settings
   pythia.readString("SpaceShower:alphaSorder = 2");
   pythia.readString("SpaceShower:alphaSvalue = 0.118");
-  pythia.readString("SpaceShower:rapidityOrder = on");
+  pythia.readString("SpaceShower:pT0Ref = 1.56");
+  pythia.readString("SpaceShower:ecmPow = 0.033");
   pythia.readString("TimeShower:alphaSorder = 2");
   pythia.readString("TimeShower:alphaSvalue = 0.118");
+
+  // CP5 Beam Remnant settings
+  pythia.readString("BeamRemnants:primordialKThard = 1.88");
+  pythia.readString("BeamRemnants:halfScaleForKT = 1.033");
+  pythia.readString("BeamRemnants:halfMassForKT = 0.978");
 
   // =========================================================================
   // Hard process: b-quark production

@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
   // CP5 is the CMS standard tune for Run 2/3, optimized for mid-rapidity
   // Reference: CMS-PAS-GEN-17-001
 
-  // Use NNPDF3.1 NNLO PDF (requires LHAPDF)
+  // PDF: NNPDF3.1 NNLO
   pythia.readString("PDF:pSet = LHAPDF6:NNPDF31_nnlo_as_0118");
 
   // CP5 MPI parameters
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
   pythia.readString("MultipartonInteractions:coreFraction = 0.758");
   pythia.readString("MultipartonInteractions:coreRadius = 0.63");
 
-  // CP5 Color Reconnection (MPI-based, mode 0)
+  // CP5 Color Reconnection
   pythia.readString("ColourReconnection:reconnect = on");
   pythia.readString("ColourReconnection:range = 5.176");
 
@@ -91,7 +91,6 @@ int main(int argc, char *argv[]) {
   pythia.readString("SpaceShower:alphaSvalue = 0.118");
   pythia.readString("SpaceShower:pT0Ref = 1.56");
   pythia.readString("SpaceShower:ecmPow = 0.033");
-  pythia.readString("SpaceShower:pTmaxFudge = 0.91");
   pythia.readString("TimeShower:alphaSorder = 2");
   pythia.readString("TimeShower:alphaSvalue = 0.118");
 
