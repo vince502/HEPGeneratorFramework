@@ -5,6 +5,11 @@
 
 # Usage: ./rivet-service-runner.sh <AnalysisSource.cc> <AnalysisName> <InputFIFO> <OutputYoda>
 
+# Check if we are running the service pipeline OR a standard command
+if [[ "$1" == "yodals" || "$1" == "rivet-mkhtml" || "$1" == "yodadiff" || "$1" == "rivet" || "$1" == "bash" ]]; then
+    exec "$@"
+fi
+
 SOURCE_CC=$1
 ANALYSIS_NAME=$2
 INPUT_FIFO=$3
