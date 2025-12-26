@@ -1,67 +1,23 @@
 # syntax=docker/dockerfile:1.6
-FROM cmsana-gen:py8313-evtgen200 AS builder
 
-# --- Additional Build Dependencies for Rivet ---
-USER root
-RUN dnf -y install \
-    git autoconf automake libtool \
-    gsl-devel \
-    boost-devel \
-    python3-devel \
-    zlib-devel \
-    && dnf clean all
+# Use the official Rivet 4.1.0 image which already contains Rivet, YODA 2, and FastJet
+FROM hepstore/rivet:4.1.0
 
-ENV PREFIX=/opt/hep
-WORKDIR ${PREFIX}/src
+# Set environment variables for our CP5 tune and data streaming
+ENV LHAPDF_DATA_PATH=/usr/local/share/LHAPDF:/work/lhapdf_data
+ENV PATH=/usr/local/bin:$PATH
+ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-# --- YODA 2.1.2 ---
-# We use -O0 to prevent the compiler from exhausting memory on heavy templates (ReaderYODA)
-RUN git clone --depth 1 -b yoda-2.1.2 https://gitlab.com/hepcedar/yoda.git && \
-    cd yoda && autoreconf -i && \
-    ./configure --prefix=${PREFIX} --disable-pyext CXXFLAGS="-O0" && \
-    make -j1 && make install
-
-# --- FastJet 3.4.0 ---
-RUN curl -L -o fastjet-3.4.0.tar.gz http://fastjet.fr/repo/fastjet-3.4.0.tar.gz && \
-    tar -xzf fastjet-3.4.0.tar.gz && \
-    cd fastjet-3.4.0 && \
-    ./configure --prefix=${PREFIX} --enable-allplugins CXXFLAGS="-O1" && \
-    make -j$(nproc) && make install
-
-# --- FastJet Contrib ---
-RUN curl -L -o fjcontrib-1.054.tar.gz http://fastjet.hepforge.org/contrib/downloads/fjcontrib-1.054.tar.gz && \
-    tar -xzf fjcontrib-1.054.tar.gz && \
-    cd fjcontrib-1.054 && \
-    ./configure --prefix=${PREFIX} CXXFLAGS="-O1" && \
-    make -j$(nproc) && make install && make fragile-shared-install
-
-# --- Rivet 4.1.0 ---
-# Rivet 4 also benefits from lower optimization during build to save RAM
-RUN git clone --depth 1 -b rivet-4.1.0 https://gitlab.com/hepcedar/rivet.git && \
-    cd rivet && autoreconf -i && \
-    ./configure --prefix=${PREFIX} \
-    --with-yoda=${PREFIX} \
-    --with-fastjet=${PREFIX} \
-    --with-hepmc3=${PREFIX} \
-    --with-lhapdf=${PREFIX} \
-    --disable-pyext CXXFLAGS="-O0" && \
-    make -j1 && make install
-
-# --- Final Service Image ---
-FROM cmsana-gen:py8313-evtgen200
-
-ENV PREFIX=/opt/hep
-ENV PATH=${PREFIX}/bin:$PATH
-ENV LD_LIBRARY_PATH=${PREFIX}/lib64:${PREFIX}/lib:$LD_LIBRARY_PATH
-ENV LHAPDF_DATA_PATH=${PREFIX}/share/LHAPDF:/work/lhapdf_data
-
-COPY --from=builder /opt/hep /opt/hep
-
-# Setup the runtime environment
+# Work in /work to match our generator environment
 WORKDIR /work
+
+# Copy the service runner script that automates compilation and running
 COPY scripts/rivet-service-runner.sh /usr/local/bin/rivet-service
 RUN chmod +x /usr/local/bin/rivet-service
 
-# Default command: show help
+# The container acts as a service that takes:
+# 1. Analysis Source (.cc)
+# 2. Analysis Name
+# 3. Input FIFO
+# 4. Output Yoda
 ENTRYPOINT ["rivet-service"]
-CMD ["--help"]
