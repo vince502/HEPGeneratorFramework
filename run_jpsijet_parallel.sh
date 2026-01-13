@@ -53,13 +53,16 @@ run_job() {
     rm -f "$FIFO"
     mkfifo "$FIFO"
     
-    # Start Rivet Service (Background)
+    # Start Rivet Service (Background) - capture full logs
     docker run --rm -d \
         --name "$CONTAINER_RIVET" \
         -v "${WORKDIR}:/work" \
         "$IMAGE_RIVET" \
-        "$ANALYSIS_FILE" "$ANALYSIS_NAME" "$FIFO" "$OUTPUT" \
-        > /dev/null 2>&1
+        "$ANALYSIS_FILE" "$ANALYSIS_NAME" "$FIFO" "$OUTPUT"
+    
+    # Follow Rivet logs in background
+    docker logs -f "$CONTAINER_RIVET" > "logs/rivet_${JOB_ID}.log" 2>&1 &
+    local RIVET_LOG_PID=$!
     
     # Start Generator (writes to FIFO)
     docker run --rm \
@@ -73,10 +76,13 @@ run_job() {
     # Wait for Rivet to finish
     docker wait "$CONTAINER_RIVET" > /dev/null 2>&1 || true
     
+    # Stop log following
+    kill $RIVET_LOG_PID 2>/dev/null || true
+    
     # Cleanup FIFO
     rm -f "$FIFO"
     
-    echo "[Job $JOB_ID] Complete → $OUTPUT"
+    echo "[Job $JOB_ID] Complete → $OUTPUT (logs: logs/gen_${JOB_ID}.log, logs/rivet_${JOB_ID}.log)"
 }
 
 # Export function and variables for parallel
