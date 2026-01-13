@@ -65,6 +65,19 @@ public:
 
     book(_hJpsipT, "JpsipT", {5, 6, 8, 10, 15, 20, 25, 30});
     book(_hJetpT, "JetpT", {5, 10, 15, 20, 30, 40, 50, 70, 100});
+
+    // New histograms: Fixed J/psi pT (6.5-10 GeV), freed jet pT (>=10 GeV)
+    book(_hZ_lowPtJpsi, "zJpsi_lowPtJpsi",
+         {0.16, 0.22, 0.298, 0.376, 0.454, 0.532, 0.610, 0.688, 0.766, 0.844,
+          0.922, 1.0});
+    book(_hZqqcc_lowPtJpsi, "zJpsiFromqqbar_lowPtJpsi",
+         {0.16, 0.22, 0.298, 0.376, 0.454, 0.532, 0.610, 0.688, 0.766, 0.844,
+          0.922, 1.0});
+    book(_hZgcc_lowPtJpsi, "zJpsiFromgtocc_lowPtJpsi",
+         {0.16, 0.22, 0.298, 0.376, 0.454, 0.532, 0.610, 0.688, 0.766, 0.844,
+          0.922, 1.0});
+    book(_hJetpT_lowPtJpsi, "JetpT_lowPtJpsi",
+         {10, 20, 30, 40, 50, 70, 100, 150, 200});
   }
 
   void analyze(const Event &event) {
@@ -202,6 +215,19 @@ public:
 
       _hZ->fill(z);
 
+      // Fill new histograms: Fixed J/psi pT (6.5-10 GeV), freed jet pT (>=10
+      // GeV)
+      double jpsiPt = jpsi_particles[0].pt();
+      double jetPt = jets[i].pt();
+      if (jpsiPt >= 6.5 && jpsiPt < 10.0 && jetPt >= 10.0) {
+        _hZ_lowPtJpsi->fill(z);
+        _hJetpT_lowPtJpsi->fill(jetPt);
+        if (isFromGtoCC(jpsi_particles[0]))
+          _hZgcc_lowPtJpsi->fill(z);
+        else
+          _hZqqcc_lowPtJpsi->fill(z);
+      }
+
       _njets->fill(nJets);
     }
   }
@@ -215,6 +241,11 @@ private:
   Histo1DPtr _hJpsipT;
   Histo1DPtr _hJetpT;
   CounterPtr _njets;
+  // New histograms: Fixed J/psi pT (6.5-10 GeV), freed jet pT (>=10 GeV)
+  Histo1DPtr _hZ_lowPtJpsi;
+  Histo1DPtr _hZqqcc_lowPtJpsi;
+  Histo1DPtr _hZgcc_lowPtJpsi;
+  Histo1DPtr _hJetpT_lowPtJpsi;
   bool isFromGtoCC(const Particle &p) const {
     // Start with the current particle
     std::vector<Particle> ancestors = {p};
