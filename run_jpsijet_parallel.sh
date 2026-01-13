@@ -38,6 +38,22 @@ else
     GEN_EXEC="/work/build/gen_bpkjpsi"
 fi
 
+# Pre-compile Rivet analysis ONCE before parallel jobs (avoid race condition)
+echo ""
+echo "Pre-compiling Rivet analysis..."
+rm -f RivetAnalysis.so
+docker run --rm \
+    -v "${WORKDIR}:/work" \
+    --entrypoint rivet-build \
+    "$IMAGE_RIVET" \
+    -o RivetAnalysis.so "$ANALYSIS_FILE"
+
+if [ ! -f "RivetAnalysis.so" ]; then
+    echo "ERROR: Rivet compilation failed!"
+    exit 1
+fi
+echo "Rivet compilation successful: RivetAnalysis.so"
+
 # Function to run a single job
 run_job() {
     local JOB_ID=$1
