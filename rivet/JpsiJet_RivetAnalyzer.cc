@@ -31,14 +31,14 @@ public:
   void init() {
 
     // Projections
-    FinalState fs(Cuts::abseta < 5.0);
+    FinalState fs(Cuts::abseta < 2.0);
     FastJets jet4(fs, JetAlg::ANTIKT, 0.4);
     declare(jet4, "jet4");
 
     // Particles for the jets
     VetoedFinalState jet_input(fs);
     const UnstableParticles jpsi_fs = UnstableParticles(
-        Cuts::abspid == PID::JPSI && Cuts::abseta < 2.4 &&
+        Cuts::abspid == PID::JPSI && Cuts::rap < 2.4 && Cuts::rap > -2.4 &&
         // FinalState jpsi_fs =
         //     FinalState(Cuts::abspid == PID::JPSI && Cuts::abseta < 2.4 &&
         Cuts::pT > 6.5 * GeV &&

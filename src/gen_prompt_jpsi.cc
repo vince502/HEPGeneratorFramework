@@ -39,6 +39,7 @@ int main(int argc, char *argv[]) {
 
   // --- Charmonium Production (OniaShower) ---
   // Main switch for charmonium production
+  pythia.readString("HardQCD:all = on");
   pythia.readString("CharmoniumShower:all = on");
   pythia.readString("OniaShower:octetSplit = 2");
   pythia.readString("OniaShower:ldmeFac = 10.0");
