@@ -21,8 +21,13 @@ int main(int argc, char *argv[]) {
   // =========================================================================
   int nEvents = (argc > 1) ? std::atoi(argv[1]) : 10000;
   std::string outFile = (argc > 2) ? argv[2] : "prompt_jpsi.hepmc3";
+  int seed = (argc > 3) ? std::atoi(argv[3]) : 0; // 0 = use time-based seed
 
   Pythia pythia;
+
+  // --- Random Seed ---
+  pythia.readString("Random:setSeed = on");
+  pythia.readString("Random:seed = " + std::to_string(seed));
 
   // =========================================================================
   // CONFIGURATION - TWEAK THESE PARAMETERS
