@@ -34,12 +34,15 @@ int main(int argc, char *argv[]) {
   // =========================================================================
 
   // --- Beam Settings ---
-  double sqrtS = 13600.0; // Center-of-mass energy [GeV]
+  double sqrtS = 5362.0; // Center-of-mass energy [GeV]
   pythia.readString("Beams:eCM = " + std::to_string(sqrtS));
 
   // --- Charmonium Production (OniaShower) ---
   // Main switch for charmonium production
-  pythia.readString("Charmonium:all = on");
+  pythia.readString("CharmoniumShower:all = on");
+  pythia.readString("OniaShower:octetSplit = 2");
+  pythia.readString("OniaShower:ldmeFac = 10.0");
+  pythia.readString("CharmoniumShower:states(3S1) = {443,100443}");
 
   // Or select specific channels:
   // pythia.readString("Charmonium:gg2ccbar(3S1)[3S1(1)]g = on");  //
@@ -52,7 +55,7 @@ int main(int argc, char *argv[]) {
   // Color-octet q qbar -> J/psi g
 
   // --- Phase Space Cuts ---
-  double pTHatMin = 0.0;  // Minimum pT of hard process [GeV]
+  double pTHatMin = 10.0;  // Minimum pT of hard process [GeV]
   double pTHatMax = -1.0; // Maximum pT (-1 = no limit) [GeV]
   pythia.readString("PhaseSpace:pTHatMin = " + std::to_string(pTHatMin));
   if (pTHatMax > 0)
@@ -89,6 +92,7 @@ int main(int argc, char *argv[]) {
 
   // CP5 Color Reconnection
   pythia.readString("ColourReconnection:reconnect = on");
+  pythia.readString("ColourReconnection:mode = 2");
   pythia.readString("ColourReconnection:range = 5.176");
 
   // CP5 ISR/FSR settings
