@@ -46,7 +46,7 @@ docker run --rm \
     -v "${WORKDIR}:/work" \
     --entrypoint rivet-build \
     "$IMAGE_RIVET" \
-    -o RivetAnalysis.so "$ANALYSIS_FILE"
+    RivetAnalysis.so "$ANALYSIS_FILE"
 
 if [ ! -f "RivetAnalysis.so" ]; then
     echo "ERROR: Rivet compilation failed!"
