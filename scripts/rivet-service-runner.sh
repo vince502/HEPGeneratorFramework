@@ -16,14 +16,18 @@ INPUT_FIFO=$3
 OUTPUT_YODA=$4
 
 echo "=== Rivet Service Started ==="
-echo "Building analysis plugin: $SOURCE_CC..."
 
-# 1. Compile the user analysis code at runtime
-if rivet-build RivetAnalysis.so "$SOURCE_CC"; then
-    echo "Build Successful: RivetAnalysis.so created."
+# 1. Check if pre-compiled .so exists, skip compilation if so (avoids race condition in parallel jobs)
+if [ -f "RivetAnalysis.so" ]; then
+    echo "Using pre-compiled RivetAnalysis.so (skipping build)"
 else
-    echo "ERROR: Compilation failed!"
-    exit 1
+    echo "Building analysis plugin: $SOURCE_CC..."
+    if rivet-build RivetAnalysis.so "$SOURCE_CC"; then
+        echo "Build Successful: RivetAnalysis.so created."
+    else
+        echo "ERROR: Compilation failed!"
+        exit 1
+    fi
 fi
 
 # 2. Tell Rivet to look in the current directory for the new plugin
