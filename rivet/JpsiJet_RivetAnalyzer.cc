@@ -81,9 +81,6 @@ public:
   }
 
   void analyze(const Event &event) {
-#ifdef JpsiDEBUG
-    printf("Start event\n");
-#endif
     // const UnstableParticles& unstable = apply<UnstableParticles>(event,
     // "UFS");
 
@@ -96,9 +93,15 @@ public:
         apply<UnstableParticles>(event, "Jpsi").particles();
     if (jpsi_particles.size() == 0)
       vetoEvent;
+#ifdef JpsiDEBUG
+    printf("> 1 Jpsi\n");
+#endif
     bool isNonPrompt = jpsi_particles[0].fromBottom();
     if (isNonPrompt)
       vetoEvent;
+#ifdef JpsiDEBUG
+    printf("Selected Prompt Jpsi\n");
+#endif
 
     //    Jets jets = apply<FastJets>(event, "jet4").jetsByPt(Cuts::pT > 30 *
     //    GeV).jetsByPt(Cuts::pT < 40 * GeV);
